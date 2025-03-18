@@ -181,13 +181,6 @@ const Contracts = () => {
           onClick={() => handleOpenModal()}
           className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center"
           disabled={availableProperties.length === 0 || tenants.length === 0}
-          title={
-            availableProperties.length === 0 
-              ? 'Não há imóveis disponíveis' 
-              : tenants.length === 0 
-                ? 'Não há inquilinos cadastrados' 
-                : 'Adicionar novo contrato'
-          }
         >
           <PlusIcon className="h-5 w-5 mr-2" />
           Novo Contrato
@@ -298,8 +291,23 @@ const Contracts = () => {
           {availableProperties.length > 0 && tenants.length > 0 && (
             <button
               onClick={() => handleOpenModal()}
-              className="mt-4 px-4 py-2
-			  <form onSubmit={handleSubmit}>
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
+            >
+              Adicionar Primeiro Contrato
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Modal para Adicionar/Editar Contrato */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className={`w-full max-w-2xl rounded-lg shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 max-h-[90vh] overflow-y-auto`}>
+            <h2 className="text-xl font-semibold mb-4">
+              {currentContract ? 'Editar Contrato' : 'Novo Contrato'}
+            </h2>
+            
+            <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -310,16 +318,14 @@ const Contracts = () => {
                     value={formData.propertyId}
                     onChange={handleChange}
                     required
-                    disabled={currentContract} // Não permitir mudar o imóvel em contratos existentes
+                    disabled={currentContract}
                     className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} ${currentContract ? 'opacity-75' : ''}`}
                   >
                     {currentContract ? (
-                      // Para contratos existentes, mostrar apenas o imóvel atual
                       <option value={formData.propertyId}>
                         {getPropertyDetails(formData.propertyId).address}
                       </option>
                     ) : (
-                      // Para novos contratos, mostrar todos os imóveis disponíveis
                       availableProperties.map(property => (
                         <option key={property._id} value={property._id}>
                           {property.address}
