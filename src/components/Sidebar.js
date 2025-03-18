@@ -9,7 +9,8 @@ import {
   ChartBarIcon,
   ArrowRightOnRectangleIcon,
   SunIcon,
-  MoonIcon
+  MoonIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { AppContext } from '../context/AppContext';
 
@@ -23,13 +24,21 @@ const Sidebar = () => {
     navigate('/login');
   };
 
+  // Menu items básicos
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <ChartBarIcon className="h-6 w-6" /> },
     { name: 'Imóveis', path: '/properties', icon: <BuildingOfficeIcon className="h-6 w-6" /> },
     { name: 'Inquilinos', path: '/tenants', icon: <UsersIcon className="h-6 w-6" /> },
     { name: 'Contratos', path: '/contracts', icon: <DocumentTextIcon className="h-6 w-6" /> },
-    { name: 'Ajustes', path: '/settings', icon: <Cog6ToothIcon className="h-6 w-6" /> },
   ];
+  
+  // Itens de menu adicionais para administradores
+  const adminItems = [
+    { name: 'Usuários', path: '/users', icon: <UserGroupIcon className="h-6 w-6" /> }
+  ];
+  
+  // Item de configurações para todos
+  const settingsItem = { name: 'Ajustes', path: '/settings', icon: <Cog6ToothIcon className="h-6 w-6" /> };
 
   return (
     <div className={`w-64 h-full flex flex-col ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}>
@@ -39,6 +48,7 @@ const Sidebar = () => {
       
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="px-2 space-y-1">
+          {/* Menu items básicos */}
           {navItems.map(item => (
             <Link
               key={item.name}
@@ -53,6 +63,47 @@ const Sidebar = () => {
               <span className="ml-3">{item.name}</span>
             </Link>
           ))}
+          
+          {/* Menu items para administradores */}
+          {user?.role === 'admin' && (
+            <>
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Administração
+                </h3>
+              </div>
+              
+              {adminItems.map(item => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`${
+                    location.pathname === item.path
+                      ? `${darkMode ? 'bg-gray-900 text-blue-400' : 'bg-gray-100 text-blue-600'}`
+                      : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'}`
+                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
+                >
+                  {item.icon}
+                  <span className="ml-3">{item.name}</span>
+                </Link>
+              ))}
+            </>
+          )}
+          
+          {/* Item de configurações */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <Link
+              to={settingsItem.path}
+              className={`${
+                location.pathname === settingsItem.path
+                  ? `${darkMode ? 'bg-gray-900 text-blue-400' : 'bg-gray-100 text-blue-600'}`
+                  : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'}`
+              } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
+            >
+              {settingsItem.icon}
+              <span className="ml-3">{settingsItem.name}</span>
+            </Link>
+          </div>
         </nav>
       </div>
       

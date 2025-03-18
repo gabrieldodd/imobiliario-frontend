@@ -11,6 +11,7 @@ import Properties from './pages/Properties';
 import Tenants from './pages/Tenants';
 import Contracts from './pages/Contracts';
 import Settings from './pages/Settings';
+import Users from './pages/Users'; // Importar nova página de usuários
 import Layout from './components/Layout';
 import PrivateRoute from './components/PrivateRoute';
 
@@ -29,6 +30,7 @@ function App() {
             <Route path="properties" element={<Properties />} />
             <Route path="tenants" element={<Tenants />} />
             <Route path="contracts" element={<Contracts />} />
+            <Route path="users" element={<Users />} /> {/* Nova rota para gerenciamento de usuários */}
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
