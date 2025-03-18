@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { PlusIcon, PencilIcon, TrashIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import InputMask from 'react-input-mask';
-import { formatCurrency, formatCPF, convertToFloat, formatDate, formatDateForInput } from '../utils/formatters';
 
 const Contracts = () => {
   const { 
@@ -323,42 +322,7 @@ const Contracts = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Observações
-                </label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  rows="4"
-                  className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                  placeholder="Observações adicionais sobre o contrato"
-                ></textarea>
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-300 dark:border-gray-600"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Contracts;Imóvel*
+                    Imóvel*
                   </label>
                   <select
                     name="propertyId"
@@ -515,3 +479,39 @@ export default Contracts;Imóvel*
               
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Observações
+                </label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  rows="4"
+                  className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                  placeholder="Observações adicionais sobre o contrato"
+                ></textarea>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-300 dark:border-gray-600"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                >
+                  Salvar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Contracts;
