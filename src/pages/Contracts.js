@@ -1,6 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { PlusIcon, PencilIcon, TrashIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import InputMask from 'react-input-mask';
+import { formatCurrency, formatCPF, convertToFloat, formatDate, formatDateForInput } from '../utils/formatters';
 
 const Contracts = () => {
   const { 
@@ -37,8 +39,8 @@ const Contracts = () => {
         tenantId: contract.tenantId || '',
         startDate: formatDateForInput(contract.startDate) || '',
         endDate: formatDateForInput(contract.endDate) || '',
-        monthlyRent: contract.monthlyRent ? contract.monthlyRent.toString() : '',
-        deposit: contract.deposit ? contract.deposit.toString() : '',
+        monthlyRent: contract.monthlyRent ? contract.monthlyRent.toString().replace('.', ',') : '',
+        deposit: contract.deposit ? contract.deposit.toString().replace('.', ',') : '',
         paymentDay: contract.paymentDay ? contract.paymentDay.toString() : '',
         status: contract.status || 'Pendente',
         notes: contract.notes || ''
@@ -74,13 +76,19 @@ const Contracts = () => {
     e.preventDefault();
     
     try {
+      // Função para converter valor com vírgula (R$ brasileiro) para float
+      const convertToFloat = (value) => {
+        if (!value) return 0;
+        return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+      };
+      
       const contractData = {
         propertyId: formData.propertyId,
         tenantId: formData.tenantId,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        monthlyRent: parseFloat(formData.monthlyRent),
-        deposit: formData.deposit ? parseFloat(formData.deposit) : 0,
+        monthlyRent: convertToFloat(formData.monthlyRent),
+        deposit: convertToFloat(formData.deposit),
         paymentDay: formData.paymentDay ? parseInt(formData.paymentDay) : 5,
         status: formData.status,
         notes: formData.notes || ''
@@ -132,9 +140,13 @@ const Contracts = () => {
   };
 
   const formatCurrency = (value) => {
+    if (!value && value !== 0) return '';
+    
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(value);
   };
 
@@ -311,7 +323,42 @@ const Contracts = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Imóvel*
+                    Observações
+                </label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  rows="4"
+                  className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                  placeholder="Observações adicionais sobre o contrato"
+                ></textarea>
+              </div>
+              
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-300 dark:border-gray-600"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                >
+                  Salvar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Contracts;Imóvel*
                   </label>
                   <select
                     name="propertyId"
@@ -390,33 +437,45 @@ const Contracts = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Valor do Aluguel (R$)*
                   </label>
-                  <input
-                    type="number"
-                    name="monthlyRent"
+                  <InputMask
+                    mask="9{1,10},99"
+                    maskChar={null}
                     value={formData.monthlyRent}
                     onChange={handleChange}
+                    name="monthlyRent"
                     required
-                    min="0"
-                    step="0.01"
-                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                    placeholder="0.00"
-                  />
+                  >
+                    {(inputProps) => (
+                      <input
+                        {...inputProps}
+                        type="text"
+                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        placeholder="0,00"
+                      />
+                    )}
+                  </InputMask>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Caução (R$)
                   </label>
-                  <input
-                    type="number"
-                    name="deposit"
+                  <InputMask
+                    mask="9{1,10},99"
+                    maskChar={null}
                     value={formData.deposit}
                     onChange={handleChange}
-                    min="0"
-                    step="0.01"
-                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                    placeholder="0.00"
-                  />
+                    name="deposit"
+                  >
+                    {(inputProps) => (
+                      <input
+                        {...inputProps}
+                        type="text"
+                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        placeholder="0,00"
+                      />
+                    )}
+                  </InputMask>
                 </div>
                 
                 <div>
@@ -456,39 +515,3 @@ const Contracts = () => {
               
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Observações
-                </label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  rows="4"
-                  className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                  placeholder="Observações adicionais sobre o contrato"
-                ></textarea>
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-300 dark:border-gray-600"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Contracts;

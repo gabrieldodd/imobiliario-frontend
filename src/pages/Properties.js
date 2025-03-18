@@ -1,7 +1,8 @@
-// src/pages/Properties.js
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import InputMask from 'react-input-mask';
+import { formatCurrency, formatCPF, convertToFloat, formatDate, formatDateForInput } from '../utils/formatters';
 
 const Properties = () => {
   const { properties, addProperty, updateProperty, deleteProperty, propertyTypes, darkMode } = useContext(AppContext);
@@ -10,6 +11,7 @@ const Properties = () => {
   const [formData, setFormData] = useState({
     title: '',
     address: '',
+    cep: '',
     type: '',
     price: '',
     size: '',
@@ -25,6 +27,7 @@ const Properties = () => {
       setFormData({
         title: '',
         address: '',
+        cep: '',
         type: propertyTypes.length > 0 ? propertyTypes[0].name : '',
         price: '',
         size: '',
@@ -41,8 +44,9 @@ const Properties = () => {
       setFormData({
         title: property.title || '',
         address: property.address || '',
+        cep: property.cep || '',
         type: property.type || (propertyTypes.length > 0 ? propertyTypes[0].name : ''),
-        price: property.price ? property.price.toString() : '',
+        price: property.price ? property.price.toString().replace('.', ',') : '',
         size: property.size ? property.size.toString() : '',
         bedrooms: property.bedrooms ? property.bedrooms.toString() : '',
         bathrooms: property.bathrooms ? property.bathrooms.toString() : '',
@@ -61,11 +65,18 @@ const Properties = () => {
     e.preventDefault();
     
     try {
+      // Função para converter valor com vírgula (R$ brasileiro) para float
+      const convertToFloat = (value) => {
+        if (!value) return 0;
+        return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+      };
+      
       const propertyData = {
         title: formData.title.trim(),
         address: formData.address.trim(),
+        cep: formData.cep.trim(),
         type: formData.type,
-        price: parseFloat(formData.price),
+        price: convertToFloat(formData.price),
         size: formData.size ? parseFloat(formData.size) : undefined,
         bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : undefined,
         bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : undefined,
@@ -140,6 +151,9 @@ const Properties = () => {
                 </span>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{property.address}</p>
+              {property.cep && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">CEP: {property.cep}</p>
+              )}
               
               <div className="mt-3 flex justify-between">
                 <div>
@@ -231,19 +245,42 @@ const Properties = () => {
                 </div>
               </div>
               
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Endereço*
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  required
-                  className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                  placeholder="Endereço completo"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Endereço*
+                  </label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    required
+                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                    placeholder="Endereço completo"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    CEP
+                  </label>
+                  <InputMask
+                    mask="99999-999"
+                    value={formData.cep}
+                    onChange={handleChange}
+                    name="cep"
+                  >
+                    {(inputProps) => (
+                      <input
+                        {...inputProps}
+                        type="text"
+                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        placeholder="00000-000"
+                      />
+                    )}
+                  </InputMask>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -251,17 +288,23 @@ const Properties = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Valor do Aluguel (R$)*
                   </label>
-                  <input
-                    type="number"
-                    name="price"
+                  <InputMask
+                    mask="9{1,10},99"
+                    maskChar={null}
                     value={formData.price}
                     onChange={handleChange}
+                    name="price"
                     required
-                    min="0"
-                    step="0.01"
-                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                    placeholder="0.00"
-                  />
+                  >
+                    {(inputProps) => (
+                      <input
+                        {...inputProps}
+                        type="text"
+                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        placeholder="0,00"
+                      />
+                    )}
+                  </InputMask>
                 </div>
                 
                 <div>

@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { PlusIcon, PencilIcon, TrashIcon, PhoneIcon, EnvelopeIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 import InputMask from 'react-input-mask';
+import { formatCurrency, formatCPF, convertToFloat, formatDate, formatDateForInput } from '../utils/formatters';
 
 const Tenants = () => {
   const { tenants, addTenant, updateTenant, deleteTenant, contracts, darkMode } = useContext(AppContext);
@@ -59,6 +60,12 @@ const Tenants = () => {
     e.preventDefault();
     
     try {
+      // Função para converter valor com vírgula (R$ brasileiro) para float
+      const convertToFloat = (value) => {
+        if (!value) return undefined;
+        return parseFloat(value.replace(/\./g, '').replace(',', '.'));
+      };
+      
       const tenantData = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -67,7 +74,7 @@ const Tenants = () => {
         cpf: formData.cpf.trim(),
         rg: formData.rg.trim(),
         profession: formData.profession.trim(),
-        income: formData.income ? parseFloat(formData.income) : undefined,
+        income: convertToFloat(formData.income),
         notes: formData.notes.trim()
       };
       
@@ -104,10 +111,27 @@ const Tenants = () => {
   };
 
   const formatCurrency = (value) => {
+    if (!value && value !== 0) return '';
+    
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(value);
+  };
+
+  // Formatação de CPF para exibição
+  const formatCPF = (cpf) => {
+    if (!cpf) return '';
+    // Remove caracteres não numéricos se já não estiver formatado
+    if (!cpf.includes('.') && !cpf.includes('-')) {
+      const numericCPF = cpf.replace(/\D/g, '');
+      if (numericCPF.length === 11) {
+        return numericCPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+      }
+    }
+    return cpf;
   };
 
   // Obter contratos ativos para cada inquilino
@@ -171,7 +195,7 @@ const Tenants = () => {
                   {tenant.cpf && (
                     <div className="flex items-center text-sm">
                       <UserCircleIcon className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
-                      <span>CPF: {tenant.cpf}</span>
+                      <span>CPF: {formatCPF(tenant.cpf)}</span>
                     </div>
                   )}
                   
@@ -232,6 +256,29 @@ const Tenants = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Renda Mensal (R$)
+                  </label>
+                  <InputMask
+                    mask="9{1,10},99"
+                    maskChar={null}
+                    value={formData.income}
+                    onChange={handleChange}
+                    name="income"
+                  >
+                    {(inputProps) => (
+                      <input
+                        {...inputProps}
+                        type="text"
+                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        placeholder="0,00"
+                      />
+                    )}
+                  </InputMask>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Nome*
                   </label>
                   <input
@@ -325,14 +372,21 @@ const Tenants = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     RG
                   </label>
-                  <input
-                    type="text"
-                    name="rg"
+                  <InputMask
+                    mask="99.999.999-9"
                     value={formData.rg}
                     onChange={handleChange}
-                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                    placeholder="00.000.000-0"
-                  />
+                    name="rg"
+                  >
+                    {(inputProps) => (
+                      <input
+                        {...inputProps}
+                        type="text"
+                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        placeholder="00.000.000-0"
+                      />
+                    )}
+                  </InputMask>
                 </div>
               </div>
               
@@ -353,56 +407,3 @@ const Tenants = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Renda Mensal (R$)
-                  </label>
-                  <input
-                    type="number"
-                    name="income"
-                    value={formData.income}
-                    onChange={handleChange}
-                    min="0"
-                    step="0.01"
-                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Observações
-                </label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  rows="4"
-                  className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                  placeholder="Observações adicionais sobre o inquilino"
-                ></textarea>
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 dark:text-gray-300 dark:border-gray-600"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
-                >
-                  Salvar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Tenants;
