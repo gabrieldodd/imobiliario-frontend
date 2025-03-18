@@ -11,6 +11,7 @@ const Register = () => {
     company: ''
   });
   const [error, setError] = useState('');
+  const [passwordStrengthMessage, setPasswordStrengthMessage] = useState('');
   const { register, authenticated, loading } = useContext(AppContext);
   const navigate = useNavigate();
 
@@ -21,10 +22,65 @@ const Register = () => {
   }, [authenticated, navigate]);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
+
+    // Atualizar mensagem de força da senha quando o campo de senha é alterado
+    if (name === 'password') {
+      updatePasswordStrength(value);
+    }
+  };
+
+  // Validação de força da senha
+  const updatePasswordStrength = (password) => {
+    let message = '';
+    let isValid = true;
+
+    // Requisitos
+    const hasMinLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[^A-Za-z0-9]/.test(password);
+
+    // Verificar cada requisito
+    if (!hasMinLength) {
+      message += '• Mínimo de 8 caracteres\n';
+      isValid = false;
+    }
+    if (!hasUpperCase) {
+      message += '• Pelo menos uma letra maiúscula\n';
+      isValid = false;
+    }
+    if (!hasLowerCase) {
+      message += '• Pelo menos uma letra minúscula\n';
+      isValid = false;
+    }
+    if (!hasNumber) {
+      message += '• Pelo menos um número\n';
+      isValid = false;
+    }
+    if (!hasSymbol) {
+      message += '• Pelo menos um símbolo\n';
+      isValid = false;
+    }
+
+    // Se tudo estiver correto
+    if (isValid) {
+      message = 'Senha forte ✓';
+    } else {
+      message = 'Sua senha precisa ter:\n' + message;
+    }
+
+    setPasswordStrengthMessage(message);
+  };
+
+  const validateEmail = (email) => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
   };
 
   const handleSubmit = async (e) => {
@@ -38,13 +94,25 @@ const Register = () => {
       return;
     }
 
+    if (!validateEmail(email)) {
+      setError('Por favor, informe um email válido.');
+      return;
+    }
+
     if (password !== passwordConfirm) {
       setError('As senhas não correspondem.');
       return;
     }
 
-    if (password.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.');
+    // Validar a força da senha
+    const hasMinLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[^A-Za-z0-9]/.test(password);
+
+    if (!(hasMinLength && hasUpperCase && hasLowerCase && hasNumber && hasSymbol)) {
+      setError('A senha deve ter pelo menos 8 caracteres, incluir uma letra maiúscula, uma minúscula, um número e um símbolo.');
       return;
     }
 
@@ -156,6 +224,12 @@ const Register = () => {
               />
             </div>
           </div>
+          
+          {formData.password && (
+            <div className={`text-sm ${passwordStrengthMessage.includes('✓') ? 'text-green-600' : 'text-amber-600'}`}>
+              <pre className="whitespace-pre-line">{passwordStrengthMessage}</pre>
+            </div>
+          )}
 
           <div>
             <button

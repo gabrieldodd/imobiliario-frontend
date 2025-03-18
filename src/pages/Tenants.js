@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { PlusIcon, PencilIcon, TrashIcon, PhoneIcon, EnvelopeIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import InputMask from 'react-input-mask';
 
 const Tenants = () => {
   const { tenants, addTenant, updateTenant, deleteTenant, contracts, darkMode } = useContext(AppContext);
@@ -265,15 +266,22 @@ const Tenants = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Telefone*
                   </label>
-                  <input
-                    type="tel"
-                    name="phone"
+                  <InputMask
+                    mask="(99) 99999-9999"
                     value={formData.phone}
                     onChange={handleChange}
+                    name="phone"
                     required
-                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                    placeholder="(00) 00000-0000"
-                  />
+                  >
+                    {(inputProps) => (
+                      <input
+                        {...inputProps}
+                        type="tel"
+                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        placeholder="(00) 00000-0000"
+                      />
+                    )}
+                  </InputMask>
                 </div>
                 
                 <div>
@@ -296,14 +304,21 @@ const Tenants = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     CPF
                   </label>
-                  <input
-                    type="text"
-                    name="cpf"
+                  <InputMask
+                    mask="999.999.999-99"
                     value={formData.cpf}
                     onChange={handleChange}
-                    className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
-                    placeholder="000.000.000-00"
-                  />
+                    name="cpf"
+                  >
+                    {(inputProps) => (
+                      <input
+                        {...inputProps}
+                        type="text"
+                        className={`w-full p-2 border rounded-md ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'}`}
+                        placeholder="000.000.000-00"
+                      />
+                    )}
+                  </InputMask>
                 </div>
                 
                 <div>
