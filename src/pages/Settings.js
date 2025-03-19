@@ -7,6 +7,7 @@ const Settings = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentType, setCurrentType] = useState(null);
   const [typeName, setTypeName] = useState('');
+  const [formError, setFormError] = useState('');
 
   const handleOpenModal = (type = null) => {
     if (type) {
@@ -16,11 +17,19 @@ const Settings = () => {
       setTypeName('');
       setCurrentType(null);
     }
+    setFormError(''); // Limpar mensagens de erro anteriores
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError(''); // Limpar mensagens de erro
+    
+    // Validar o nome do tipo antes de enviar
+    if (!typeName || typeName.trim() === '') {
+      setFormError('Por favor, informe um nome para o tipo de imóvel');
+      return;
+    }
     
     try {
       // Log para debug
@@ -40,6 +49,8 @@ const Settings = () => {
       setTypeName('');
     } catch (error) {
       console.error('Erro ao salvar tipo de imóvel:', error);
+      // O toast será exibido pelo contexto, mas também mostramos o erro no formulário
+      setFormError(error.message || 'Erro ao salvar tipo de imóvel. Por favor, tente novamente.');
     }
   };
 
@@ -126,6 +137,12 @@ const Settings = () => {
             </h2>
             
             <form onSubmit={handleSubmit}>
+              {formError && (
+                <div className="mb-4 p-3 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-md text-sm">
+                  {formError}
+                </div>
+              )}
+              
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Nome do Tipo

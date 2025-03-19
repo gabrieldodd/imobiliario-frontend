@@ -320,7 +320,7 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Funções para gerenciar tipos de imóveis - SOLUÇÃO ROBUSTA
+  // Funções para gerenciar tipos de imóveis - CORRIGIDA
   const addPropertyType = async (data) => {
     try {
       // Verificar se recebemos um objeto ou uma string
@@ -359,7 +359,18 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao adicionar tipo de imóvel:', error);
-      toast.error(error.response?.data?.error || error.message || 'Erro ao adicionar tipo de imóvel. Por favor, tente novamente.');
+      
+      // Extrair mensagem de erro específica da resposta da API
+      let errorMessage = 'Erro ao adicionar tipo de imóvel. Por favor, tente novamente.';
+      
+      if (error.response && error.response.data) {
+        // Tentar obter a mensagem de erro do backend
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -424,7 +435,18 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar tipo de imóvel:', error);
-      toast.error(error.response?.data?.error || error.message || 'Erro ao atualizar tipo de imóvel. Por favor, tente novamente.');
+      
+      // Extrair mensagem de erro específica da resposta da API
+      let errorMessage = 'Erro ao atualizar tipo de imóvel. Por favor, tente novamente.';
+      
+      if (error.response && error.response.data) {
+        // Tentar obter a mensagem de erro do backend
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -450,12 +472,22 @@ export const AppProvider = ({ children }) => {
       toast.success('Tipo de imóvel excluído com sucesso!');
     } catch (error) {
       console.error('Erro ao excluir tipo de imóvel:', error);
-      toast.error(error.response?.data?.error || error.message || 'Erro ao excluir tipo de imóvel. Por favor, tente novamente.');
+      
+      // Extrair mensagem de erro específica da resposta da API
+      let errorMessage = 'Erro ao excluir tipo de imóvel. Por favor, tente novamente.';
+      
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
 
-  // Funções para gerenciar usuários (nova funcionalidade)
+  // Funções para gerenciar usuários
   const fetchUsers = async () => {
     try {
       setUsersLoading(true);
@@ -485,7 +517,17 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao adicionar usuário:', error);
-      toast.error(error.response?.data?.error || error.message || 'Erro ao adicionar usuário. Por favor, tente novamente.');
+      
+      // Extrair mensagem de erro da resposta da API
+      let errorMessage = 'Erro ao adicionar usuário. Por favor, tente novamente.';
+      
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -498,7 +540,17 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
-      toast.error(error.response?.data?.error || error.message || 'Erro ao atualizar usuário. Por favor, tente novamente.');
+      
+      // Extrair mensagem de erro da resposta da API
+      let errorMessage = 'Erro ao atualizar usuário. Por favor, tente novamente.';
+      
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -515,7 +567,17 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao redefinir senha:', error);
-      toast.error(error.response?.data?.error || error.message || 'Erro ao redefinir senha. Por favor, tente novamente.');
+      
+      // Extrair mensagem de erro da resposta da API
+      let errorMessage = 'Erro ao redefinir senha. Por favor, tente novamente.';
+      
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
@@ -534,7 +596,17 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao alterar status do usuário:', error);
-      toast.error(error.response?.data?.error || error.message || 'Erro ao alterar status do usuário. Por favor, tente novamente.');
+      
+      // Extrair mensagem de erro da resposta da API
+      let errorMessage = 'Erro ao alterar status do usuário. Por favor, tente novamente.';
+      
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };
