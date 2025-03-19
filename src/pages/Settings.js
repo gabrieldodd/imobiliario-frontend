@@ -1,6 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
-import { PlusIcon, PencilIcon, TrashIcon, RefreshIcon } from '@heroicons/react/24/outline';
+import { 
+  PlusIcon, 
+  PencilIcon, 
+  TrashIcon, 
+  ArrowPathIcon 
+} from '@heroicons/react/24/outline';
 
 const Settings = () => {
   const { 
@@ -113,7 +118,7 @@ const Settings = () => {
               title="Sincronizar com o servidor"
               disabled={isSyncing}
             >
-              <RefreshIcon className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <ArrowPathIcon className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
               <span className="ml-1">Atualizar</span>
             </button>
             <button
