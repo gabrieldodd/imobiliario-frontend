@@ -105,7 +105,7 @@ export const AppProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('Erro de registro:', error);
-      toast.error('Erro ao criar conta. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || 'Erro ao criar conta. Por favor, tente novamente.');
       return false;
     } finally {
       setLoading(false);
@@ -143,7 +143,7 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao adicionar imóvel:', error);
-      toast.error('Erro ao adicionar imóvel. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || 'Erro ao adicionar imóvel. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -158,7 +158,7 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar imóvel:', error);
-      toast.error('Erro ao atualizar imóvel. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || 'Erro ao atualizar imóvel. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -180,7 +180,7 @@ export const AppProvider = ({ children }) => {
       toast.success('Imóvel excluído com sucesso!');
     } catch (error) {
       console.error('Erro ao excluir imóvel:', error);
-      toast.error(error.message || 'Erro ao excluir imóvel. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao excluir imóvel. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -194,7 +194,7 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao adicionar inquilino:', error);
-      toast.error('Erro ao adicionar inquilino. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || 'Erro ao adicionar inquilino. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -209,7 +209,7 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar inquilino:', error);
-      toast.error('Erro ao atualizar inquilino. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || 'Erro ao atualizar inquilino. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -231,7 +231,7 @@ export const AppProvider = ({ children }) => {
       toast.success('Inquilino excluído com sucesso!');
     } catch (error) {
       console.error('Erro ao excluir inquilino:', error);
-      toast.error(error.message || 'Erro ao excluir inquilino. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao excluir inquilino. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -260,7 +260,7 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao adicionar contrato:', error);
-      toast.error(error.message || 'Erro ao adicionar contrato. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao adicionar contrato. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -297,7 +297,7 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar contrato:', error);
-      toast.error(error.message || 'Erro ao atualizar contrato. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao atualizar contrato. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -315,7 +315,7 @@ export const AppProvider = ({ children }) => {
       toast.success('Contrato excluído com sucesso!');
     } catch (error) {
       console.error('Erro ao excluir contrato:', error);
-      toast.error('Erro ao excluir contrato. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || 'Erro ao excluir contrato. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -323,30 +323,50 @@ export const AppProvider = ({ children }) => {
   // Funções para gerenciar tipos de imóveis
   const addPropertyType = async (name) => {
     try {
-      if (propertyTypes.some(type => type.name === name)) {
+      // Validação de entrada
+      if (!name || name.trim() === '') {
+        toast.error('Por favor, informe um nome para o tipo de imóvel');
+        throw new Error('Nome do tipo de imóvel é obrigatório');
+      }
+      
+      // Normalizar o nome (remover espaços extras, etc)
+      const trimmedName = name.trim();
+      
+      // Verificar se já existe localmente
+      if (propertyTypes.some(type => type.name.toLowerCase() === trimmedName.toLowerCase())) {
         toast.error('Este tipo de imóvel já existe');
         throw new Error('Este tipo de imóvel já existe');
       }
       
-      const response = await propertyTypeService.create(name);
+      // Enviando um objeto com a propriedade name
+      const response = await propertyTypeService.create({ name: trimmedName });
+      
       setPropertyTypes([...propertyTypes, response.data]);
       toast.success('Tipo de imóvel adicionado com sucesso!');
       return response.data;
     } catch (error) {
       console.error('Erro ao adicionar tipo de imóvel:', error);
-      toast.error(error.message || 'Erro ao adicionar tipo de imóvel. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao adicionar tipo de imóvel. Por favor, tente novamente.');
       throw error;
     }
   };
 
   const updatePropertyType = async (id, name) => {
     try {
-      if (propertyTypes.some(type => type.name === name && type._id !== id)) {
+      if (!name || name.trim() === '') {
+        toast.error('Por favor, informe um nome para o tipo de imóvel');
+        throw new Error('Nome do tipo de imóvel é obrigatório');
+      }
+      
+      const trimmedName = name.trim();
+      
+      if (propertyTypes.some(type => type.name.toLowerCase() === trimmedName.toLowerCase() && type._id !== id)) {
         toast.error('Este tipo de imóvel já existe');
         throw new Error('Este tipo de imóvel já existe');
       }
       
-      const response = await propertyTypeService.update(id, name);
+      // Enviando um objeto com a propriedade name
+      const response = await propertyTypeService.update(id, { name: trimmedName });
       
       // Atualizar os tipos nos tipos de imóveis
       setPropertyTypes(propertyTypes.map(t => 
@@ -355,11 +375,11 @@ export const AppProvider = ({ children }) => {
       
       // Atualizar os imóveis que usam este tipo
       const oldType = propertyTypes.find(t => t._id === id);
-      if (oldType && oldType.name !== name) {
+      if (oldType && oldType.name !== trimmedName) {
         await Promise.all(
           properties
             .filter(p => p.type === oldType.name)
-            .map(p => updateProperty(p._id, { type: name }))
+            .map(p => updateProperty(p._id, { type: trimmedName }))
         );
       }
       
@@ -367,7 +387,7 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar tipo de imóvel:', error);
-      toast.error(error.message || 'Erro ao atualizar tipo de imóvel. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao atualizar tipo de imóvel. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -393,7 +413,7 @@ export const AppProvider = ({ children }) => {
       toast.success('Tipo de imóvel excluído com sucesso!');
     } catch (error) {
       console.error('Erro ao excluir tipo de imóvel:', error);
-      toast.error(error.message || 'Erro ao excluir tipo de imóvel. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao excluir tipo de imóvel. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -407,7 +427,7 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
-      toast.error('Erro ao carregar usuários. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || 'Erro ao carregar usuários. Por favor, tente novamente.');
       return [];
     } finally {
       setUsersLoading(false);
@@ -416,13 +436,19 @@ export const AppProvider = ({ children }) => {
 
   const addUser = async (userData) => {
     try {
+      // Validar dados
+      if (!userData.name || !userData.email || !userData.password) {
+        toast.error('Por favor, preencha todos os campos obrigatórios');
+        throw new Error('Todos os campos são obrigatórios');
+      }
+      
       const response = await authService.createUser(userData);
       setUsers([...users, response.data]);
       toast.success('Usuário adicionado com sucesso!');
       return response.data;
     } catch (error) {
       console.error('Erro ao adicionar usuário:', error);
-      toast.error(error.response?.data?.error || 'Erro ao adicionar usuário. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao adicionar usuário. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -435,32 +461,43 @@ export const AppProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
-      toast.error(error.response?.data?.error || 'Erro ao atualizar usuário. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao atualizar usuário. Por favor, tente novamente.');
       throw error;
     }
   };
 
   const resetUserPassword = async (id, password) => {
     try {
+      if (!password || password.length < 6) {
+        toast.error('A senha deve ter pelo menos 6 caracteres');
+        throw new Error('Senha inválida');
+      }
+      
       const response = await authService.resetPassword(id, password);
       toast.success('Senha redefinida com sucesso!');
       return response.data;
     } catch (error) {
       console.error('Erro ao redefinir senha:', error);
-      toast.error(error.response?.data?.error || 'Erro ao redefinir senha. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao redefinir senha. Por favor, tente novamente.');
       throw error;
     }
   };
 
   const toggleUserStatus = async (id) => {
     try {
+      // Não permitir desativar o próprio usuário
+      if (id === user.id) {
+        toast.error('Não é possível desativar seu próprio usuário');
+        throw new Error('Operação não permitida');
+      }
+      
       const response = await authService.toggleUserStatus(id);
       setUsers(users.map(u => u._id === id ? response.data : u));
       toast.success(`Usuário ${response.data.active ? 'ativado' : 'desativado'} com sucesso!`);
       return response.data;
     } catch (error) {
       console.error('Erro ao alterar status do usuário:', error);
-      toast.error(error.response?.data?.error || 'Erro ao alterar status do usuário. Por favor, tente novamente.');
+      toast.error(error.response?.data?.error || error.message || 'Erro ao alterar status do usuário. Por favor, tente novamente.');
       throw error;
     }
   };
@@ -533,7 +570,7 @@ export const AppProvider = ({ children }) => {
         getOccupancyRate,
         getMonthlyRevenue,
         getUpcomingRenewals,
-        // Novas funções de gerenciamento de usuários
+        // Funções de gerenciamento de usuários
         users,
         usersLoading,
         fetchUsers,

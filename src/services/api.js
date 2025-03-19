@@ -175,20 +175,22 @@ export const contractService = {
   },
 };
 
-// Serviços de tipos de imóveis
+// Serviços de tipos de imóveis (versão corrigida)
 export const propertyTypeService = {
   getAll: async () => {
     const response = await api.get('/property-types');
     return response.data;
   },
   
-  create: async (name) => {
-    const response = await api.post('/property-types', { name });
+  create: async (data) => {
+    // Esta função deve receber um objeto com a propriedade 'name', não apenas a string
+    const response = await api.post('/property-types', data);
     return response.data;
   },
   
-  update: async (id, name) => {
-    const response = await api.put(`/property-types/${id}`, { name });
+  update: async (id, data) => {
+    // Esta função deve receber um objeto com a propriedade 'name', não apenas a string
+    const response = await api.put(`/property-types/${id}`, data);
     return response.data;
   },
   
