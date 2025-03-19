@@ -23,13 +23,21 @@ const Settings = () => {
     e.preventDefault();
     
     try {
+      // Log para debug
+      console.log('Tentando salvar tipo:', {
+        typeName: typeName,
+        currentType: currentType ? currentType._id : null,
+        token: localStorage.getItem('token') ? 'presente' : 'ausente'
+      });
+      
       if (currentType) {
-        await updatePropertyType(currentType._id, typeName);
+        await updatePropertyType(currentType._id, { name: typeName });
       } else {
-        await addPropertyType(typeName);
+        await addPropertyType({ name: typeName });
       }
       
       setIsModalOpen(false);
+      setTypeName('');
     } catch (error) {
       console.error('Erro ao salvar tipo de imóvel:', error);
     }
