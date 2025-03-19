@@ -320,17 +320,30 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // Funções para gerenciar tipos de imóveis
-  const addPropertyType = async (name) => {
+  // Funções para gerenciar tipos de imóveis - SOLUÇÃO ROBUSTA
+  const addPropertyType = async (data) => {
     try {
-      // Validação de entrada
-      if (!name || name.trim() === '') {
+      // Verificar se recebemos um objeto ou uma string
+      let nameValue;
+      
+      if (typeof data === 'string') {
+        nameValue = data;
+      } else if (data && typeof data === 'object' && data.name) {
+        nameValue = data.name;
+      } else {
+        console.error('Formato inválido para addPropertyType:', data);
+        toast.error('Formato de dados inválido');
+        throw new Error('Formato de dados inválido para tipo de imóvel');
+      }
+      
+      // Validar o valor do nome
+      if (!nameValue || typeof nameValue !== 'string' || nameValue.trim() === '') {
         toast.error('Por favor, informe um nome para o tipo de imóvel');
         throw new Error('Nome do tipo de imóvel é obrigatório');
       }
       
-      // Normalizar o nome (remover espaços extras, etc)
-      const trimmedName = name.trim();
+      // Normalizar o nome (remover espaços extras)
+      const trimmedName = nameValue.trim();
       
       // Verificar se já existe localmente
       if (propertyTypes.some(type => type.name.toLowerCase() === trimmedName.toLowerCase())) {
@@ -351,21 +364,45 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const updatePropertyType = async (id, name) => {
+  const updatePropertyType = async (id, dataOrName) => {
     try {
-      if (!name || name.trim() === '') {
+      // Verificar o formato dos dados
+      let nameValue;
+      
+      if (typeof dataOrName === 'string') {
+        nameValue = dataOrName;
+      } else if (dataOrName && typeof dataOrName === 'object' && dataOrName.name) {
+        nameValue = dataOrName.name;
+      } else {
+        console.error('Formato inválido para updatePropertyType:', dataOrName);
+        toast.error('Formato de dados inválido');
+        throw new Error('Formato de dados inválido para tipo de imóvel');
+      }
+      
+      // Validar o valor do nome
+      if (!nameValue || typeof nameValue !== 'string' || nameValue.trim() === '') {
         toast.error('Por favor, informe um nome para o tipo de imóvel');
         throw new Error('Nome do tipo de imóvel é obrigatório');
       }
       
-      const trimmedName = name.trim();
+      const trimmedName = nameValue.trim();
       
-      if (propertyTypes.some(type => type.name.toLowerCase() === trimmedName.toLowerCase() && type._id !== id)) {
+      // Encontrar o tipo existente
+      const existingType = propertyTypes.find(type => type._id === id);
+      if (!existingType) {
+        toast.error('Tipo de imóvel não encontrado');
+        throw new Error('Tipo de imóvel não encontrado');
+      }
+      
+      // Verificar se já existe outro tipo com esse nome
+      if (propertyTypes.some(type => 
+        type.name.toLowerCase() === trimmedName.toLowerCase() && type._id !== id
+      )) {
         toast.error('Este tipo de imóvel já existe');
         throw new Error('Este tipo de imóvel já existe');
       }
       
-      // Enviando um objeto com a propriedade name
+      // Enviar a atualização
       const response = await propertyTypeService.update(id, { name: trimmedName });
       
       // Atualizar os tipos nos tipos de imóveis
@@ -374,11 +411,11 @@ export const AppProvider = ({ children }) => {
       ));
       
       // Atualizar os imóveis que usam este tipo
-      const oldType = propertyTypes.find(t => t._id === id);
-      if (oldType && oldType.name !== trimmedName) {
+      const oldName = existingType.name;
+      if (oldName.toLowerCase() !== trimmedName.toLowerCase()) {
         await Promise.all(
           properties
-            .filter(p => p.type === oldType.name)
+            .filter(p => p.type === oldName)
             .map(p => updateProperty(p._id, { type: trimmedName }))
         );
       }
@@ -486,7 +523,7 @@ export const AppProvider = ({ children }) => {
   const toggleUserStatus = async (id) => {
     try {
       // Não permitir desativar o próprio usuário
-      if (id === user.id) {
+      if (id === user?.id) {
         toast.error('Não é possível desativar seu próprio usuário');
         throw new Error('Operação não permitida');
       }
