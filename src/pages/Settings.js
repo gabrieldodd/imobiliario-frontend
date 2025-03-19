@@ -1,13 +1,39 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, RefreshIcon } from '@heroicons/react/24/outline';
 
 const Settings = () => {
-  const { propertyTypes, addPropertyType, updatePropertyType, deletePropertyType, darkMode, toggleDarkMode } = useContext(AppContext);
+  const { 
+    propertyTypes, 
+    addPropertyType, 
+    updatePropertyType, 
+    deletePropertyType, 
+    fetchPropertyTypes,
+    darkMode, 
+    toggleDarkMode 
+  } = useContext(AppContext);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentType, setCurrentType] = useState(null);
   const [typeName, setTypeName] = useState('');
   const [formError, setFormError] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Sincronizar tipos de imóveis ao entrar na página
+  useEffect(() => {
+    syncPropertyTypes();
+  }, []);
+
+  const syncPropertyTypes = async () => {
+    try {
+      setIsSyncing(true);
+      await fetchPropertyTypes();
+      setIsSyncing(false);
+    } catch (error) {
+      console.error('Erro ao sincronizar tipos de imóveis:', error);
+      setIsSyncing(false);
+    }
+  };
 
   const handleOpenModal = (type = null) => {
     if (type) {
@@ -32,13 +58,6 @@ const Settings = () => {
     }
     
     try {
-      // Log para debug
-      console.log('Tentando salvar tipo:', {
-        typeName: typeName,
-        currentType: currentType ? currentType._id : null,
-        token: localStorage.getItem('token') ? 'presente' : 'ausente'
-      });
-      
       if (currentType) {
         await updatePropertyType(currentType._id, { name: typeName });
       } else {
@@ -87,13 +106,24 @@ const Settings = () => {
       <div className={`rounded-lg shadow-md p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-medium">Tipos de Imóveis</h2>
-          <button
-            onClick={() => handleOpenModal()}
-            className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md flex items-center"
-          >
-            <PlusIcon className="h-4 w-4 mr-1" />
-            Adicionar
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={syncPropertyTypes}
+              className={`px-3 py-1 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 text-sm rounded-md flex items-center ${isSyncing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title="Sincronizar com o servidor"
+              disabled={isSyncing}
+            >
+              <RefreshIcon className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span className="ml-1">Atualizar</span>
+            </button>
+            <button
+              onClick={() => handleOpenModal()}
+              className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md flex items-center"
+            >
+              <PlusIcon className="h-4 w-4 mr-1" />
+              Adicionar
+            </button>
+          </div>
         </div>
         
         <div className="space-y-2">

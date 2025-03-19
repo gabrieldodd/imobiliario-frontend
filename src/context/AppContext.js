@@ -45,8 +45,7 @@ export const AppProvider = ({ children }) => {
       setLoading(true);
       
       // Carregar tipos de imóveis
-      const typesResponse = await propertyTypeService.getAll();
-      setPropertyTypes(typesResponse.data || []);
+      await fetchPropertyTypes();
       
       // Carregar imóveis
       const propertiesResponse = await propertyService.getAll();
@@ -74,6 +73,21 @@ export const AppProvider = ({ children }) => {
       toast.error('Erro ao carregar dados. Por favor, tente novamente.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Função para buscar tipos de imóveis do servidor
+  const fetchPropertyTypes = async () => {
+    try {
+      console.log('Buscando tipos de imóveis do servidor...');
+      const response = await propertyTypeService.getAll();
+      console.log('Tipos recebidos:', response.data);
+      setPropertyTypes(response.data || []);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar tipos de imóveis:', error);
+      toast.error('Erro ao carregar tipos de imóveis. Por favor, tente novamente.');
+      return [];
     }
   };
 
@@ -345,7 +359,7 @@ export const AppProvider = ({ children }) => {
       // Normalizar o nome (remover espaços extras)
       const trimmedName = nameValue.trim();
       
-      // Verificar se já existe localmente
+      // Verificar se já existe localmente (case insensitive)
       if (propertyTypes.some(type => type.name.toLowerCase() === trimmedName.toLowerCase())) {
         toast.error('Este tipo de imóvel já existe');
         throw new Error('Este tipo de imóvel já existe');
@@ -364,6 +378,7 @@ export const AppProvider = ({ children }) => {
       let errorMessage = 'Erro ao adicionar tipo de imóvel. Por favor, tente novamente.';
       
       if (error.response && error.response.data) {
+        console.log('Resposta de erro do servidor:', error.response);
         // Tentar obter a mensagem de erro do backend
         errorMessage = error.response.data.error || errorMessage;
       } else if (error.message) {
@@ -440,6 +455,7 @@ export const AppProvider = ({ children }) => {
       let errorMessage = 'Erro ao atualizar tipo de imóvel. Por favor, tente novamente.';
       
       if (error.response && error.response.data) {
+        console.log('Resposta de erro do servidor:', error.response);
         // Tentar obter a mensagem de erro do backend
         errorMessage = error.response.data.error || errorMessage;
       } else if (error.message) {
@@ -477,6 +493,7 @@ export const AppProvider = ({ children }) => {
       let errorMessage = 'Erro ao excluir tipo de imóvel. Por favor, tente novamente.';
       
       if (error.response && error.response.data) {
+        console.log('Resposta de erro do servidor:', error.response);
         errorMessage = error.response.data.error || errorMessage;
       } else if (error.message) {
         errorMessage = error.message;
@@ -676,6 +693,7 @@ export const AppProvider = ({ children }) => {
         addPropertyType,
         updatePropertyType,
         deletePropertyType,
+        fetchPropertyTypes,
         getOccupancyRate,
         getMonthlyRevenue,
         getUpcomingRenewals,
