@@ -177,45 +177,25 @@ export const contractService = {
 
 // Serviços de tipos de imóveis (versão corrigida)
 // Implementação melhorada para o serviço de tipos de imóveis
+// Serviço PropertyType simplificado para api.js
 export const propertyTypeService = {
   getAll: async (queryString = '') => {
-    try {
-      const response = await api.get(`/property-types${queryString}`);
-      console.log('Resultado da API de tipos:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Erro na API getAll:', error);
-      throw error;
-    }
+    const response = await api.get(`/property-types${queryString}`);
+    return response.data;
   },
   
   create: async (data) => {
-    try {
-      const response = await api.post('/property-types', data);
-      return response.data;
-    } catch (error) {
-      console.error('Erro na API create:', error);
-      throw error;
-    }
+    const response = await api.post('/property-types', data);
+    return response.data;
   },
   
   update: async (id, data) => {
-    try {
-      const response = await api.put(`/property-types/${id}`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Erro na API update:', error);
-      throw error;
-    }
+    const response = await api.put(`/property-types/${id}`, data);
+    return response.data;
   },
   
   delete: async (id) => {
-    try {
-      const response = await api.delete(`/property-types/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Erro na API delete:', error);
-      throw error;
-    }
+    const response = await api.delete(`/property-types/${id}`);
+    return response.data;
   },
-};
+};;

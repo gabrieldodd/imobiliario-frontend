@@ -4,8 +4,7 @@ import {
   PlusIcon, 
   PencilIcon, 
   TrashIcon, 
-  ArrowPathIcon,
-  ExclamationCircleIcon
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 
 const Settings = () => {
@@ -24,59 +23,33 @@ const Settings = () => {
   const [typeName, setTypeName] = useState('');
   const [formError, setFormError] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
-  const [syncError, setSyncError] = useState(false);
 
-  // Sincronizar tipos de imóveis ao entrar na página,
-  // com tentativas automáticas em caso de falha
+  // Sincronizar tipos de imóveis ao entrar na página
   useEffect(() => {
-    const loadPropertyTypes = async () => {
-      let attempts = 0;
-      const maxAttempts = 3;
-      
-      const attemptSync = async () => {
-        try {
-          setIsSyncing(true);
-          setSyncError(false);
-          await fetchPropertyTypes();
-          setIsSyncing(false);
-          console.log('Tipos carregados com sucesso');
-        } catch (error) {
-          attempts++;
-          console.error(`Erro ao sincronizar tipos (tentativa ${attempts}/${maxAttempts}):`, error);
-          
-          if (attempts < maxAttempts) {
-            // Espera um tempo e tenta novamente (backoff exponencial)
-            const delay = Math.pow(2, attempts) * 1000;
-            console.log(`Tentando novamente em ${delay/1000} segundos...`);
-            
-            setTimeout(() => {
-              attemptSync();
-            }, delay);
-          } else {
-            setIsSyncing(false);
-            setSyncError(true);
-            console.error('Falha ao carregar tipos após múltiplas tentativas');
-          }
-        }
-      };
-      
-      // Inicia o processo de sincronização
-      attemptSync();
+    // Função simples para carregar os tipos
+    const loadTypes = async () => {
+      setIsSyncing(true);
+      try {
+        await fetchPropertyTypes();
+      } catch (error) {
+        console.error('Erro ao carregar tipos:', error);
+      } finally {
+        setIsSyncing(false);
+      }
     };
     
-    loadPropertyTypes();
-  }, [fetchPropertyTypes]);
+    loadTypes();
+  }, []); // Dependência vazia para executar apenas uma vez
 
+  // Função para sincronização manual
   const syncPropertyTypes = async () => {
+    setIsSyncing(true);
     try {
-      setIsSyncing(true);
-      setSyncError(false);
       await fetchPropertyTypes();
-      setIsSyncing(false);
     } catch (error) {
       console.error('Erro ao sincronizar tipos de imóveis:', error);
+    } finally {
       setIsSyncing(false);
-      setSyncError(true);
     }
   };
 
@@ -88,15 +61,14 @@ const Settings = () => {
       setTypeName('');
       setCurrentType(null);
     }
-    setFormError(''); // Limpar mensagens de erro anteriores
+    setFormError('');
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError(''); // Limpar mensagens de erro
+    setFormError('');
     
-    // Validar o nome do tipo antes de enviar
     if (!typeName || typeName.trim() === '') {
       setFormError('Por favor, informe um nome para o tipo de imóvel');
       return;
@@ -112,11 +84,10 @@ const Settings = () => {
       setIsModalOpen(false);
       setTypeName('');
       
-      // Atualizar a lista após adicionar/editar um tipo
+      // Atualizar a lista após adicionar/editar
       await syncPropertyTypes();
     } catch (error) {
       console.error('Erro ao salvar tipo de imóvel:', error);
-      // O toast será exibido pelo contexto, mas também mostramos o erro no formulário
       setFormError(error.message || 'Erro ao salvar tipo de imóvel. Por favor, tente novamente.');
     }
   };
@@ -125,7 +96,7 @@ const Settings = () => {
     if (window.confirm('Tem certeza que deseja excluir este tipo de imóvel?')) {
       try {
         await deletePropertyType(id);
-        // Atualizar a lista após excluir um tipo
+        // Atualizar a lista após excluir
         await syncPropertyTypes();
       } catch (error) {
         console.error('Erro ao excluir tipo de imóvel:', error);
@@ -176,17 +147,10 @@ const Settings = () => {
           </div>
         </div>
         
-        {syncError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-md text-sm flex items-center">
-            <ExclamationCircleIcon className="h-5 w-5 mr-2" />
-            <span>Erro ao carregar os tipos de imóveis. Clique em "Atualizar" para tentar novamente.</span>
-          </div>
-        )}
-        
         {isSyncing ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <span className="ml-2 text-gray-500 dark:text-gray-400">Carregando tipos de imóveis...</span>
+            <span className="ml-2 text-gray-500 dark:text-gray-400">Carregando...</span>
           </div>
         ) : (
           <>
@@ -215,7 +179,7 @@ const Settings = () => {
               ))}
             </div>
             
-            {propertyTypes.length === 0 && !syncError && (
+            {propertyTypes.length === 0 && (
               <p className="text-center text-gray-500 dark:text-gray-400 py-4">
                 Nenhum tipo de imóvel cadastrado.
               </p>

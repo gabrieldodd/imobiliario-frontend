@@ -77,55 +77,30 @@ export const AppProvider = ({ children }) => {
   };
 
 	// Função para buscar tipos de imóveis do servidor
-	// Função fetchPropertyTypes melhorada 
-  const fetchPropertyTypes = async () => {
-	try {
-	  // Log para debug
-	  console.log('Buscando todos os tipos de imóveis para a empresa...');
-	  
-	  // Força o servidor a retornar TODOS os tipos para a empresa atual
-	  // Adicionando timestamp para evitar cache do navegador
-	  const timestamp = new Date().getTime();
-	  const response = await propertyTypeService.getAll(`?_t=${timestamp}`);
-
-	  console.log('Tipos recebidos do servidor:', response.data);
+	// Função fetchPropertyTypes simplificada para AppContext.js
+	const fetchPropertyTypes = async () => {
+	  try {
+		console.log('Buscando tipos de imóveis do servidor...');
+		// Adicionar timestamp para evitar cache
+		const timestamp = new Date().getTime();
+		const response = await propertyTypeService.getAll(`?_t=${timestamp}`);
 		
-	  // Verificar se temos dados válidos
-		if (Array.isArray(response.data)) {
-		  // Armazenar no state
+		if (response && response.data) {
+		  console.log('Tipos recebidos:', response.data);
+		  // Atualizar o estado
 		  setPropertyTypes(response.data);
-		  
-		  // Log para debug
-		  console.log(`Carregados ${response.data.length} tipos de imóveis`);
-		  
-		  // Se não recebeu nenhum tipo, pode ser um problema no servidor
-		  if (response.data.length === 0) {
-			console.warn('Aviso: Nenhum tipo de imóvel recebido do servidor');
-		  }
-		  
 		  return response.data;
 		} else {
-		  console.error('Formato de resposta inesperado:', response);
-		  toast.error('Erro ao carregar tipos de imóveis: formato de dados inválido');
+		  console.error('Resposta inválida ao buscar tipos:', response);
+		  toast.error('Erro ao carregar tipos de imóveis');
 		  return [];
 		}
 	  } catch (error) {
 		console.error('Erro ao buscar tipos de imóveis:', error);
-		
-		let errorMessage = 'Erro ao carregar tipos de imóveis. Por favor, tente novamente.';
-		
-		if (error.response) {
-		  console.error('Resposta de erro do servidor:', error.response.status, error.response.data);
-		  errorMessage = error.response.data?.error || errorMessage;
-		} else if (error.request) {
-		  console.error('Sem resposta do servidor:', error.request);
-		  errorMessage = 'Servidor não respondeu. Verifique sua conexão.';
-		}
-		
-		toast.error(errorMessage);
+		toast.error('Erro ao carregar tipos de imóveis. Por favor, tente novamente.');
 		return [];
 	  }
-  };
+	};
 
   // Autenticação
   const login = async (email, password) => {
