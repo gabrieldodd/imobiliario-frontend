@@ -346,60 +346,66 @@ export const AppProvider = ({ children }) => {
   };
 
   // Funções para gerenciar tipos de imóveis - CORRIGIDA
-  const addPropertyType = async (data) => {
-    try {
-      // Verificar se recebemos um objeto ou uma string
-      let nameValue;
-      
-      if (typeof data === 'string') {
-        nameValue = data;
-      } else if (data && typeof data === 'object' && data.name) {
-        nameValue = data.name;
-      } else {
-        console.error('Formato inválido para addPropertyType:', data);
-        toast.error('Formato de dados inválido');
-        throw new Error('Formato de dados inválido para tipo de imóvel');
-      }
-      
-      // Validar o valor do nome
-      if (!nameValue || typeof nameValue !== 'string' || nameValue.trim() === '') {
-        toast.error('Por favor, informe um nome para o tipo de imóvel');
-        throw new Error('Nome do tipo de imóvel é obrigatório');
-      }
-      
-      // Normalizar o nome (remover espaços extras)
-      const trimmedName = nameValue.trim();
-      
-      // Verificar se já existe localmente (case insensitive)
-      if (propertyTypes.some(type => type.name.toLowerCase() === trimmedName.toLowerCase())) {
-        toast.error('Este tipo de imóvel já existe');
-        throw new Error('Este tipo de imóvel já existe');
-      }
-      
-      // Enviando um objeto com a propriedade name
-      const response = await propertyTypeService.create({ name: trimmedName });
-      
-      setPropertyTypes([...propertyTypes, response.data]);
-      toast.success('Tipo de imóvel adicionado com sucesso!');
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao adicionar tipo de imóvel:', error);
-      
-      // Extrair mensagem de erro específica da resposta da API
-      let errorMessage = 'Erro ao adicionar tipo de imóvel. Por favor, tente novamente.';
-      
-      if (error.response && error.response.data) {
-        console.log('Resposta de erro do servidor:', error.response);
-        // Tentar obter a mensagem de erro do backend
-        errorMessage = error.response.data.error || errorMessage;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      toast.error(errorMessage);
-      throw error;
-    }
-  };
+  
+	// Função addPropertyType melhorada para verificar duplicidade apenas dentro da empresa
+	const addPropertyType = async (data) => {
+	  try {
+		// Verificar se recebemos um objeto ou uma string
+		let nameValue;
+		
+		if (typeof data === 'string') {
+		  nameValue = data;
+		} else if (data && typeof data === 'object' && data.name) {
+		  nameValue = data.name;
+		} else {
+		  console.error('Formato inválido para addPropertyType:', data);
+		  toast.error('Formato de dados inválido');
+		  throw new Error('Formato de dados inválido para tipo de imóvel');
+		}
+		
+		// Validar o valor do nome
+		if (!nameValue || typeof nameValue !== 'string' || nameValue.trim() === '') {
+		  toast.error('Por favor, informe um nome para o tipo de imóvel');
+		  throw new Error('Nome do tipo de imóvel é obrigatório');
+		}
+		
+		// Normalizar o nome (remover espaços extras)
+		const trimmedName = nameValue.trim();
+		
+		// Verificar se já existe localmente (case insensitive) - APENAS DENTRO DA EMPRESA ATUAL
+		// Observação: propertyTypes já contém apenas os tipos da empresa atual pois foi filtrado na API
+		if (propertyTypes.some(type => type.name.toLowerCase() === trimmedName.toLowerCase())) {
+		  toast.error('Este tipo de imóvel já existe na sua empresa');
+		  throw new Error('Este tipo de imóvel já existe na sua empresa');
+		}
+		
+		// Tudo certo, vamos criar o tipo de imóvel
+		console.log('Criando tipo de imóvel:', trimmedName);
+		
+		// Enviando um objeto com a propriedade name
+		const response = await propertyTypeService.create({ name: trimmedName });
+		
+		// Adicionar o novo tipo à lista
+		setPropertyTypes([...propertyTypes, response.data]);
+		toast.success('Tipo de imóvel adicionado com sucesso!');
+		return response.data;
+	  } catch (error) {
+		console.error('Erro ao adicionar tipo de imóvel:', error);
+		
+		// Tratamento específico para erros 400 (Bad Request)
+		if (error.response && error.response.status === 400) {
+		  // Erro de validação do servidor - provavelmente já existe um tipo com esse nome
+		  const errorMessage = error.response.data?.error || 'Este tipo de imóvel já existe.';
+		  toast.error(errorMessage);
+		  throw new Error(errorMessage);
+		} else {
+		  // Outros erros
+		  const errorMessage = error.message || 'Erro ao adicionar tipo de imóvel. Por favor, tente novamente.';
+		  toast.error(errorMessage);
+		  throw error;
+		}
+	  }
+	};
 
   const updatePropertyType = async (id, dataOrName) => {
     try {
